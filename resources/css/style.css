@@ -11,3 +11,7 @@ body{
   position: relative;
   transform: rotate(-45deg);
 }
+
+.map {
+  height: 500px;
+}
