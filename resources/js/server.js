@@ -1,27 +1,42 @@
 // simple HTTP server using TCP sockets
 var net = require('net');
 var fs = require('fs');
+var http = require('http');
+
+
+
+
 var server = net.createServer(function (socket) {
+  let angle;
 
   socket.on('data', function (data) {
-    console.log('Received: ' + data);
+    console.log(String(data));
     r = data.toString();
-    console.log(r.length); // figure out the length for the first GET
-    if (r.substring(0, 3) == "GET" & r.length <= 600) { // if GET only
-      // Server is not checking to make sure that the client 
-      // actually sent a well-formed header.
+    if (r.substring(0, 4) == "POST") {
+      var angleIndex = String(r).indexOf('angle');
+      if (angleIndex != -1) angle = String(r).slice(angleIndex + 6);
+      // if (r.substring(0, 3) == "GET" & r.length <= 600) { // if GET only
 
       //socket.write("OK");
       socket.write("HTTP/1.1 200 OK\n");
+      socket.write("Content-Length: " + String(angle).length);
+      socket.write("\n\n");
+      socket.write(String(angle));
+    }
+    // socket.push(String(angle));
+    if (r.substring(0, 5) == "GET /") {
+      socket.write("HTTP/1.1 200 OK\n");
+      console.log('here');
+      console.log(angle);
+      fs.readFile('../../direction.html', 'utf8', function (contents) {
+        socket.write("Content-Length: " + String(angle).length);
+        socket.write("\n\n");
+        socket.write(String(angle));
+      })
+    }
 
-      fs.readFile('index.html', 'utf8', function (err, contents) {
-        console.log(contents);
-				socket.write("Content-Length:"+contents.length);
-				socket.write("\n\n"); // two carriage returns
-				socket.write(contents);
-      });
+    // } else console.log(r); // show the actual message
 
-    } else console.log(r); // show the actual message
   });
   socket.on('close', function () {
     console.log('Connection closed');
@@ -34,6 +49,6 @@ var server = net.createServer(function (socket) {
     console.log('client disconnected');
   });
 });
-server.listen(5500, function () {
-  console.log('server is listening on port 5500');
+server.listen(1337, function () {
+  console.log('server is listening on port 1337');
 });
